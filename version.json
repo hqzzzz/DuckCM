@@ -1,0 +1,5 @@
+{
+  "version": "2.3.0",
+  "notes": "DuckCM v2.3.0：GB 湿帘面积 Δt 湿球温差校准、风机 P-Q 工作点曲线、热源能耗口径。",
+  "file": "bin/DuckCM.exe"
+}

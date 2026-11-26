@@ -1,0 +1,9 @@
+/target
+/release
+*.log
+_*.log
+*.bak
+*.docx
+.last_project/
+# 发布 exe 需要入库（jsDelivr CDN 直接取用）
+!bin/DuckCM.exe
