@@ -7,3 +7,5 @@ _*.log
 .last_project/
 # 发布 exe 需要入库（jsDelivr CDN 直接取用）
 !bin/DuckCM.exe
+
+_test230/

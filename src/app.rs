@@ -1018,11 +1018,12 @@ impl eframe::App for DuckApp {
                     }
                 }
                 ui.separator();
-                // 路径框占满剩余宽度（长 UNC 路径也能看全），悬停显示完整路径
-                let avail = ui.available_width() - 64.0;
+                // 路径框占满剩余宽度（长 UNC 路径也能看全），悬停显示完整路径；
+                // 右侧预留「关于 + 更新按钮 + 版本号」整块宽度，避免重叠
+                let avail = ui.available_width() - 250.0;
                 let r = ui.add(
                     egui::TextEdit::singleline(&mut self.project_path)
-                        .desired_width(avail.max(320.0))
+                        .desired_width(avail.max(160.0))
                         .hint_text("工程文件路径 (.json)"),
                 );
                 let r_changed = r.changed();

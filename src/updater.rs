@@ -175,44 +175,43 @@ fn parse_ver(s: &str) -> (u32, u32, u32) {
     (v[0], v[1], v[2])
 }
 
-fn check_worker(tx: std::sync::mpsc::Sender<Msg>) {
+/// 全源查询 version.json，取版本号最高者（对抗 jsDelivr @latest 缓存延迟）
+fn fetch_best_meta() -> Option<RemoteMeta> {
+    let mut best: Option<RemoteMeta> = None;
     for url in ver_sources("version.json") {
-        match get_text(&url) {
-            Ok(body) => match serde_json::from_str::<RemoteMeta>(&body) {
-                Ok(m) => {
-                    if parse_ver(&m.version) > parse_ver(VERSION) {
-                        let _ = tx.send(Msg::Avail {
-                            ver: m.version,
-                            notes: m.notes,
-                        });
-                    } else {
-                        let _ = tx.send(Msg::Latest);
-                    }
-                    return;
+        if let Ok(body) = get_text(&url) {
+            if let Ok(m) = serde_json::from_str::<RemoteMeta>(&body) {
+                match &best {
+                    Some(b) if parse_ver(&b.version) >= parse_ver(&m.version) => {}
+                    _ => best = Some(m),
                 }
-                Err(e) => {
-                    let _ = tx.send(Msg::Fail(format!("version.json 解析失败：{e}")));
-                    return;
-                }
-            },
-            Err(_) => continue, // 源不可达，尝试下一回退
+            }
         }
     }
-    let _ = tx.send(Msg::Fail("所有更新源均不可达（网络或仓库未发布）".into()));
+    best
+}
+
+fn check_worker(tx: std::sync::mpsc::Sender<Msg>) {
+    match fetch_best_meta() {
+        Some(m) => {
+            if parse_ver(&m.version) > parse_ver(VERSION) {
+                let _ = tx.send(Msg::Avail {
+                    ver: m.version,
+                    notes: m.notes,
+                });
+            } else {
+                let _ = tx.send(Msg::Latest);
+            }
+        }
+        None => {
+            let _ = tx.send(Msg::Fail("所有更新源均不可达（网络或仓库未发布）".into()));
+        }
+    }
 }
 
 fn download_worker(tx: std::sync::mpsc::Sender<Msg>) {
     // 先取远端元数据（拿到版本与仓库内文件路径），再按 file 字段三级回退下载
-    let Some(m) = (|| {
-        for u in ver_sources("version.json") {
-            if let Ok(b) = get_text(&u) {
-                if let Ok(m) = serde_json::from_str::<RemoteMeta>(&b) {
-                    return Some(m);
-                }
-            }
-        }
-        None
-    })() else {
+    let Some(m) = fetch_best_meta() else {
         let _ = tx.send(Msg::Fail("无法读取远端版本信息".into()));
         return;
     };

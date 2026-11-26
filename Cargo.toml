@@ -1,6 +1,6 @@
-[package]
+﻿[package]
 name = "duckcm"
-version = "2.3.0"
+version = "2.4.0"
 edition = "2021"
 description = "DuckCM 2 — 养殖用房屋设备自动化计算系统 (Rust 重写)"
 license = "MIT"
