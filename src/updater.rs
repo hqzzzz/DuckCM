@@ -278,3 +278,17 @@ fn try_download(
     });
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::parse_ver;
+
+    #[test]
+    fn version_ordering() {
+        assert!(parse_ver("2.4.0") > parse_ver("2.3.0"));
+        assert!(parse_ver("2.10.0") > parse_ver("2.9.9"));
+        assert!(parse_ver("v2.4.1") > parse_ver("2.4.0"));
+        assert_eq!(parse_ver("2.4.0"), parse_ver("2.4"));
+        assert_eq!(parse_ver("garbage"), (0, 0, 0));
+    }
+}
