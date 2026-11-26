@@ -9,3 +9,5 @@ _*.log
 !bin/DuckCM.exe
 
 _test230/
+
+_test240/
