@@ -163,7 +163,8 @@ fn get_text(url: &str) -> Result<String, String> {
             r.into_reader()
                 .read_to_string(&mut s)
                 .map_err(|e| e.to_string())?;
-            Ok(s)
+            // Windows 记事本/PowerShell 5.1 保存的 UTF-8 带 BOM，serde_json 不容
+            Ok(s.trim_start_matches('\u{feff}').to_string())
         })
 }
 
